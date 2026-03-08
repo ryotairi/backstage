@@ -1,5 +1,9 @@
+import os
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
+from tortoise import Tortoise
 
 from .config import config
 from .utils.crypt import decrypt, encrypt
@@ -20,20 +24,67 @@ from .routes.user.patch_user import patch_user_route
 from .routes.user.get_suite_user import get_suite_user
 from .routes.user.post_user_param import post_user_param
 
-class DecryptBodyMiddleware(BaseHTTPMiddleware):
-    """Middleware to decrypt incoming octet-stream bodies (msgpack + AES)."""
 
-    async def dispatch(self, request: Request, call_next):
-        request.state.decrypted_body = None
-        content_type = request.headers.get("content-type", "")
+class DecryptBodyMiddleware:
+    """Pure ASGI middleware to decrypt incoming octet-stream bodies (msgpack + AES)."""
+
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        state = scope.setdefault("state", {})
+        state["decrypted_body"] = None
+
+        # Check content-type from headers
+        headers = dict(scope.get("headers", []))
+        content_type = headers.get(b"content-type", b"").decode("utf-8", errors="replace")
+
         if content_type == "application/octet-stream":
-            body_bytes = await request.body()
+            # Collect the full request body
+            body_chunks = []
+            body_complete = False
+
+            async def receive_wrapper():
+                nonlocal body_complete
+                message = await receive()
+                if message["type"] == "http.request":
+                    body = message.get("body", b"")
+                    if body:
+                        body_chunks.append(body)
+                    if not message.get("more_body", False):
+                        body_complete = True
+                return message
+
+            # Read the body by consuming receive messages
+            while not body_complete:
+                await receive_wrapper()
+
+            body_bytes = b"".join(body_chunks)
             if body_bytes and len(body_bytes) > 0:
                 try:
-                    request.state.decrypted_body = decrypt(body_bytes)
+                    state["decrypted_body"] = decrypt(body_bytes)
                 except Exception as e:
                     logger.error(f"Failed to decrypt body: {e}")
-        return await call_next(request)
+
+            # Since we consumed the body, we need to replay it for downstream
+            body_sent = False
+
+            async def replay_receive():
+                nonlocal body_sent
+                if not body_sent:
+                    body_sent = True
+                    return {"type": "http.request", "body": body_bytes, "more_body": False}
+                # After body is sent, pass through to original receive for disconnect etc.
+                return await receive()
+
+            await self.app(scope, replay_receive, send)
+        else:
+            await self.app(scope, receive, send)
+
 
 
 def create_api_app() -> FastAPI:

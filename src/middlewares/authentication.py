@@ -1,5 +1,5 @@
 import re
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 from starlette.requests import Request
 from starlette.responses import Response
 from ..utils.crypt import encrypt
@@ -13,19 +13,30 @@ PUBLIC_PATHS = [
 ]
 
 
-class AuthenticationMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        path = request.url.path
+class AuthenticationMiddleware:
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path", "")
 
         # Check if path is public
         for pattern in PUBLIC_PATHS:
             if pattern.search(path):
-                request.state.user_id = None
-                return await call_next(request)
+                scope.setdefault("state", {})["user_id"] = None
+                await self.app(scope, receive, send)
+                return
 
-        credential = request.headers.get("x-session-token")
+        # Extract x-session-token from headers
+        headers = dict(scope.get("headers", []))
+        credential = headers.get(b"x-session-token", b"").decode("utf-8", errors="replace") or None
+
         if not credential:
-            return Response(
+            response = Response(
                 content=encrypt({
                     "httpStatus": 401,
                     "errorCode": "",
@@ -34,10 +45,12 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 status_code=401,
                 media_type="application/octet-stream",
             )
+            await response(scope, receive, send)
+            return
 
         user = await User.filter(credential=credential).first()
         if not user:
-            return Response(
+            response = Response(
                 content=encrypt({
                     "httpStatus": 401,
                     "errorCode": "",
@@ -46,6 +59,8 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 status_code=401,
                 media_type="application/octet-stream",
             )
+            await response(scope, receive, send)
+            return
 
-        request.state.user_id = user.userId
-        return await call_next(request)
+        scope.setdefault("state", {})["user_id"] = user.userId
+        await self.app(scope, receive, send)

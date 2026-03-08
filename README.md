@@ -1,7 +1,7 @@
 # Backstage: An implementation of Project SEKAI's backend API
 
 > [!CAUTION]
-> This project was partially AI-generated based on [libresekai](https://github.com/ryotairi/libresekai).
+> This project was partially AI-generated from [libresekai](https://github.com/ryotairi/libresekai).
 
 **Please note: this project is still WIP. You may find some garbage files with random request/response contents, etc. [You may check out my notes about this API.](https://cloud.rustyraven.pw/s/ze6jPp377aB9xJF)**
 
