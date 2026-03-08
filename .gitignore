@@ -1,0 +1,11 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+/__pycache__
+/.vscode
+/assets
+/bin
+/include
+/json
+/lib
+/lib64
+/suitemasterfile
+/config.yml

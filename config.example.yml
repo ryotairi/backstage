@@ -1,0 +1,96 @@
+apiPort: 4455
+webPort: 4456
+versionPort: 4457
+# i will use same port for all asset domains
+assetsPort: 4458
+maintenanceStatus: 'maintenance_out'
+
+#          'n-production-game-api.sekai-en.com'
+apiDomain: 'libre-sekai-game-api.yourdomain.co'
+
+#          'n-production-web.sekai-en.com'
+webDomain: 'sekai-web-files.yourdomain.co' # must be 29 characters long
+
+#              'game-version.sekai-en.com'
+versionDomain: 'sekai-gamev.yourdomain.co'
+
+domains:
+  #               'assetbundle-api.sekai-en.com'
+  assetbundleApi: 'ls-assetbundle.yourdomain.co'
+  #               'n-{0}-{1}-assetbundle.sekai-en.com'
+  assetbundleUrl: 'nn-{0}-{1}-ls-assets.yourdomain.co'
+  #                   'n-{0}-{1}-assetbundle-info.sekai-en.com'
+  assetbundleInfoUrl: 'n-{0}-{1}-assetbundl-info.yourdomain.co'
+
+versions:
+  - systemProfile: 'production'
+    appVersion: '5.1.0'
+    multiPlayVersion: luka
+    assetVersion: '5.1.0.10'
+    appVersionStatus: 'available'
+
+suiteMasterSplitPath:
+- 'suitemasterfile/5.1.0.10/00_dba319e36bc25105fca7513625bd107a8d42e25ddf26b4826c5aa154d158e239'
+- 'suitemasterfile/5.1.0.10/01_dba319e36bc25105fca7513625bd107a8d42e25ddf26b4826c5aa154d158e239'
+- 'suitemasterfile/5.1.0.10/02_dba319e36bc25105fca7513625bd107a8d42e25ddf26b4826c5aa154d158e239'
+- 'suitemasterfile/5.1.0.10/03_dba319e36bc25105fca7513625bd107a8d42e25ddf26b4826c5aa154d158e239'
+- 'suitemasterfile/5.1.0.10/04_dba319e36bc25105fca7513625bd107a8d42e25ddf26b4826c5aa154d158e239'
+- 'suitemasterfile/5.1.0.10/05_dba319e36bc25105fca7513625bd107a8d42e25ddf26b4826c5aa154d158e239'
+- 'suitemasterfile/5.1.0.10/06_dba319e36bc25105fca7513625bd107a8d42e25ddf26b4826c5aa154d158e239'
+
+assetHash: '00000000-0000-4000-0000-00000000000'
+
+versionData:
+  '5.1.0/621bca66-741f-4d15-9452-8ebda83ccb48':
+    profile: production
+    assetbundleHostHash: 846c90c1
+    domain: libre-sekai-game-api.yourdomain.co
+
+latestVersion: 0
+
+legal:
+  privacyPolicy: ''
+  termsOfUse: ''
+
+informations:
+  - id: 1
+    seq: 1
+    informationType: normal
+    informationTag: information 
+    browseType: 'external'
+    platform: 'all'
+    title: 'You are connected to libresekai'
+    path: 'https://github.com/ryotairi/libresekai'
+    startAt: 0
+  - id: 2
+    seq: 2
+    informationType: normal
+    informationTag: information 
+    browseType: 'external'
+    platform: 'all'
+    title: 'Report issues here'
+    path: 'https://github.com/ryotairi/libresekai/issues'
+    startAt: 0
+
+initialPlayerName: 'SEKAI Player'
+
+deleteLiveDataAfterFinishing: true
+
+initialFreeCards: [81, 89, 93, 97, 101, 105] # Initial Leo/need cards
+initialMusics:
+- 1 # Tell Your World
+- 2 # ROKI (Leo/need)
+- 10 # Happy Synthesizer (MORE MORE JUMP)
+- 26 # Bring It On (Vivid BAD SQUAD)
+- 41 # Sweet Magic (Wonderlands x Showtime)
+- 50 # Blessing (VOCALOIDS)
+- 51 # The World Hasn't Even Started Yet (Wonderlands x Showtime)
+- 54 # Ready Steady (Vivid BAD SQUAD)
+- 57 # Newly Edgy Idols (More More Jump)
+- 60 # Composing the Future (Nightcord at 25:00)
+- 67 # Jishoumushoku (Nightcord at 25:00)
+- 76 # SEKAI
+- 77 # Wah Wah World
+- 82 # alive
+
+upstreamAssetUrl: 'https://find-this-by-yourself.sekai-en.com'
