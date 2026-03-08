@@ -9,3 +9,5 @@
 /lib64
 /suitemasterfile
 /config.yml
+
+**/__pycache__/*
