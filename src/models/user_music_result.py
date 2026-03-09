@@ -3,6 +3,7 @@ from tortoise.models import Model
 
 
 class UserMusicResult(Model):
+    uniqueResultId = fields.CharField(max_length=128, pk=True)
     
     userId = fields.BigIntField()
     musicId = fields.IntField()

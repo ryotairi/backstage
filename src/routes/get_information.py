@@ -18,7 +18,7 @@ async def get_informations_route(request: Request) -> Response:
     
     return Response(
         content=encrypt({
-            "informations": reg_data['updatedResources']['userInformations'] #[info.model_dump() for info in config.informations],
+            "informations": [info.model_dump() for info in config.informations],
         }),
         media_type="application/octet-stream",
     )

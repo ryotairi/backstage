@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import uuid4
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import Response
@@ -124,10 +125,11 @@ async def finish_live_route(request: Request, userId: int, liveId: str) -> Respo
     elif fullCombo:
         playResult = 'full_combo'
     
-    result = await UserMusicResult.filter(musicId=live.musicId)
+    result = await UserMusicResult.filter(musicId=live.musicId).first()
     
     if not result:
         await UserMusicResult.create(
+            uniqueResultId=str(uuid4()),
             musicId=live.musicId,
             musicDifficulty=difficulty['musicDifficulty'],
             userId=userId,
