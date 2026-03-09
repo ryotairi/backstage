@@ -56,6 +56,7 @@ class Config(BaseModel):
     domains: DomainsConfig
     versions: list[GameAppVersion]
     latestVersion: int
+    dataVersion: str
     versionData: dict[str, VersionData]
     apiDomain: str
     webDomain: str

@@ -9,6 +9,13 @@ class UserEpisodeStatus(Model):
     episodeId = fields.IntField()
     status = fields.CharField(max_length=32)  # can_not_read, unreleased, released, already_read
     isNotSkipped = fields.BooleanField()
+    
+    autoFinish = fields.BooleanField(default=False)
+    useAuto = fields.BooleanField(default=False)
+    fastForward = fields.BooleanField(default=False)
+    voice = fields.BooleanField(default=False)
+    continuousPlayStart = fields.BooleanField(default=False)
+    playMusicVideo = fields.BooleanField(default=False)
 
     userId = fields.BigIntField(null=True)
 

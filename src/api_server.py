@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request, Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 from tortoise import Tortoise
 
+
 from .config import config
 from .utils.crypt import decrypt, encrypt
 from .middlewares.api_logger import ApiLoggerMiddleware
@@ -23,7 +24,10 @@ from .routes.live.finish_live import finish_live_route
 from .routes.user.patch_user import patch_user_route
 from .routes.user.get_suite_user import get_suite_user
 from .routes.user.post_user_param import post_user_param
-
+from .routes.user.user_home_refresh import user_home_refresh
+from .routes.user.story.post_user_story import post_user_story
+from .routes.user.get_user_areas import get_user_areas
+from .routes.user.story.post_user_story_log import post_user_story_log
 
 class DecryptBodyMiddleware:
     """Pure ASGI middleware to decrypt incoming octet-stream bodies (msgpack + AES)."""
@@ -111,7 +115,9 @@ def create_api_app() -> FastAPI:
 
     # Routes
     app.add_api_route("/api/system", get_system_route, methods=["GET"])
-    app.add_api_route("/api/informations", get_informations_route, methods=["GET"])
+    
+    app.add_api_route("/api/information", get_informations_route, methods=["GET"])
+    
     app.add_api_route("/api/user", register_user_route, methods=["POST"])
 
     app.add_api_route("/api/suitemasterfile/{version}/{fileName}", suite_master_file_route, methods=["GET"])
@@ -119,13 +125,21 @@ def create_api_app() -> FastAPI:
     app.add_api_route("/api/suite/user/{userId}", get_suite_user, methods=['GET'])
 
     app.add_api_route("/api/user/na/{userId}/legal/ageinfo", user_age_info_route, methods=["GET"])
-    app.add_api_route("/api/user/{userId}/{id}", post_user_param, methods=["POST"])
+    app.add_api_route('/api/user/{userId}/home/refresh', user_home_refresh, methods=['PUT'])
 
     app.add_api_route("/api/user/{userId}/auth", user_auth_route, methods=["PUT"])
     app.add_api_route("/api/user/{userId}/tutorial", set_tutorial_status_route, methods=["PATCH"])
     app.add_api_route("/api/user/{userId}", patch_user_route, methods=["PATCH"])
 
     app.add_api_route("/api/user/{userId}/live", start_live_route, methods=["POST"])
-    app.add_api_route("/api/user/{userId}/live/{liveId}", finish_live_route, methods=["POST"])
+    app.add_api_route("/api/user/{userId}/live/{liveId}", finish_live_route, methods=["PUT"])
+    
+    app.add_api_route('/api/user/{userId}/story/{storyType}/episode/{episodeId}', post_user_story, methods=['POST'])
+    app.add_api_route('/api/user/{userId}/story/{storyType}/episode/{episodeId}/log', post_user_story_log, methods=['POST'])
+
+    # Catch-all param route - must be LAST among /api/user/{userId}/... POST routes
+    app.add_api_route("/api/user/{userId}/{id}", post_user_param, methods=["POST"])
+    
+    app.add_api_route('/api/user/{userId}/area', get_user_areas, methods=['GET'])
 
     return app

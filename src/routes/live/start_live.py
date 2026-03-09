@@ -1,7 +1,10 @@
+import json
 import uuid
 from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import Response
+
+from ...services.logger import logger
 
 from ...utils.crypt import encrypt
 from ...utils.updated_resources import generate_updated_resources
@@ -64,11 +67,18 @@ async def start_live_route(request: Request, userId: int) -> Response:
         musicId=parsed.musicId,
         musicVocalId=parsed.musicVocalId,
     )
+    
+    print(f'{auth_user_id} starts a solo live! {live_id}. Diff. ID: {parsed.musicDifficultyId}')
 
     await User.filter(userId=auth_user_id).update(userLiveId=live_id)
 
     updated = await generate_updated_resources(user.userId)
     return Response(
-        content=encrypt({"updatedResources": updated}),
+        content=encrypt({
+            "updatedResources": updated,
+            "userLiveId": live_id,
+            "skills": [],
+            "comboCutins": [],
+        }),
         media_type="application/octet-stream",
     )

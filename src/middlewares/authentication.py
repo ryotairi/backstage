@@ -7,7 +7,7 @@ from ..models.user import User
 
 PUBLIC_PATHS = [
     re.compile(r"^/api/system$"),
-    re.compile(r"^/api/informations$"),
+    re.compile(r"^/api/information$"),
     re.compile(r"^/api/user$"),
     re.compile(r"^/api/user/\d+/auth(\?.+)?$"),
 ]

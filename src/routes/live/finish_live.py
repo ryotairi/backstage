@@ -3,6 +3,10 @@ from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import Response
 
+from src.models.user_music_result import UserMusicResult
+from src.utils.master_suite import get_difficulty
+from src.utils.play_result import compare_play_result_gt
+
 from ...utils.crypt import encrypt
 from ...utils.updated_resources import generate_updated_resources
 from ...config import config
@@ -23,7 +27,7 @@ class FinishLivePayload(BaseModel):
     tapCount: int
     musicCategoryName: str
     isMirrored: bool
-    ingameCutinCharacterArchiveVoiceGroupIds: list[Any]
+    ingameCutinCharacterArchiveVoiceGroupIds: list[Any] | None
 
 
 async def finish_live_route(request: Request, userId: int, liveId: str) -> Response:
@@ -89,6 +93,10 @@ async def finish_live_route(request: Request, userId: int, liveId: str) -> Respo
         f"GOOD: {parsed.goodCount}, BAD: {parsed.badCount}, MISS: {parsed.missCount}, "
         f"LIFE: {parsed.life}, MAX COMBO: {parsed.maxCombo}, SCORE: {parsed.score}"
     )
+    
+    difficulty = get_difficulty(live.musicDifficultyId)
+    
+    # TODO compare sum of taps with difficulty['totalNoteCount'] 
 
     if config.deleteLiveDataAfterFinishing:
         await UserLive.filter(liveId=liveId, userId=auth_user_id).delete()
@@ -103,6 +111,38 @@ async def finish_live_route(request: Request, userId: int, liveId: str) -> Respo
             life=parsed.life,
             maxCombo=parsed.maxCombo,
             tapCount=parsed.tapCount,
+        )
+    
+    fullPerfect = parsed.perfectCount == difficulty['totalNoteCount']
+    fullCombo = not fullPerfect and (parsed.perfectCount + parsed.greatCount == difficulty['totalNoteCount'])
+    
+    playResult = 'clear'
+    if parsed.life == 0:
+        playResult = 'not_clear'
+    elif fullPerfect:
+        playResult = 'full_perfect'
+    elif fullCombo:
+        playResult = 'full_combo'
+    
+    result = await UserMusicResult.filter(musicId=live.musicId)
+    
+    if not result:
+        await UserMusicResult.create(
+            musicId=live.musicId,
+            musicDifficulty=difficulty['musicDifficulty'],
+            userId=userId,
+            playType='solo',
+            playResult=playResult,
+            highScore=parsed.score,
+            fullComboFlg=fullCombo,
+            fullPerfectFlg=fullPerfect
+        )
+    else:
+        await UserMusicResult.filter(userId=userId, musicId=live.musicId, musicDifficulty=difficulty['musicDifficulty']).update(
+            playResult=compare_play_result_gt(playResult, result.playResult),
+            highScore=max(result.highScore, parsed.score),
+            fullComboFlg=(result.fullComboFlg or fullCombo),
+            fullPerfectFlg=(result.fullPerfectFlg or fullPerfect)
         )
 
     updated = await generate_updated_resources(auth_user_id)

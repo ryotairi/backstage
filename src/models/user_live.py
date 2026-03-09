@@ -13,6 +13,8 @@ class UserLive(Model):
     deckId = fields.IntField()
     boostCount = fields.IntField()
     isAutoPlay = fields.BooleanField()
+    
+    # musicDifficulty = fields.CharField(max_length=16)
 
     # has results only after finishing
     perfectCount = fields.IntField(null=True)

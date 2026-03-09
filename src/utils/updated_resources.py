@@ -2,6 +2,8 @@ import json
 import time
 from math import floor
 
+from src.models.user_music_result import UserMusicResult
+
 from ..config import config
 from ..models.user import User
 from ..models.user_stamp import UserStamp
@@ -151,6 +153,26 @@ async def generate_updated_resources(user_id: int) -> dict:
         }
         for music in musics
     ]
+    
+    results = await UserMusicResult.filter(userId=user.userId)
+    
+    user_music_results = [
+        {
+            "userId": result.userId,
+            "musicId": result.musicId,
+            "musicDifficulty": result.musicDifficulty,
+            "playType": result.playType,
+            "playResult": result.playResult,
+            "highScore": result.highScore,
+            "fullComboFlg": result.fullComboFlg,
+            "fullPerfectFlg": result.fullPerfectFlg,
+            "mvpCount": result.mvpCount,
+            "superStarCount": result.superStarCount,
+            "createAt": _ts(result.createdAt), # it should be like that
+            "updatedAt": _ts(result.updatedAt),
+        }
+        for result in results
+    ]
 
     user_characters = [
         {
@@ -247,6 +269,33 @@ async def generate_updated_resources(user_id: int) -> dict:
 
     result = {
         **reg.get("updatedResources", {}),
+        "userLoginBonuses": [
+            {"userId": user.userId, "loginBonusId": 1, "loginBonusType": "normal", "progress": 1}
+        ],
+        "userConfig": {
+            "defaultMusicType": "sekai",
+            "isDisplayLoginStatus": True,
+            "friendRequestScope": "all",
+            "naOptoutAdvertisingType": "",
+            "naOptoutSupportAndAnalyticsType": "",  
+        },
+        "userPracticeTickets": [],
+        "userSkillPracticeTickets": [],
+        "userMaterials": [],
+        "userGachas": [],
+        "userGachaBonusPoints": [],
+        "userCostume3dStatuses": [],
+        "userCostume3dShopItems": [],
+        "userCharacterCostume3ds": [],
+        "unreadUserTopics": [],
+        "userHomeBanners": [],
+        "userGachaCeilExchanges": [],
+        "userGachaCeilItems": [],
+        "userGachaCeilExchangeSubstituteCosts": [],
+        "userBoostItems": [],
+        "userStampFavoriteTabs": [],
+        "userStampFavorites": [],
+        
         "now": int(time.time() * 1000),
         "refreshableTypes": [],
         "userRegistration": user_registration,
@@ -276,7 +325,7 @@ async def generate_updated_resources(user_id: int) -> dict:
         "userCards": user_cards,
         "userDecks": user_decks,
         "userMusics": user_musics,
-        "userMusicResults": [],
+        "userMusicResults": user_music_results,
         "userMusicAchievements": [],
         "userShops": user_shops_payload,
         "userBonds": [],
