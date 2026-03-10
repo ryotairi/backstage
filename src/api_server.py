@@ -1,10 +1,9 @@
 import os
 from contextlib import asynccontextmanager
+import re
 
 from fastapi import FastAPI, Request, Response
 from starlette.types import ASGIApp, Receive, Scope, Send
-from tortoise import Tortoise
-
 
 from .config import config
 from .utils.crypt import decrypt, encrypt
@@ -46,11 +45,17 @@ class DecryptBodyMiddleware:
         # Check content-type from headers
         headers = dict(scope.get("headers", []))
         content_type = headers.get(b"content-type", b"").decode("utf-8", errors="replace")
+        path = scope.get("path", "/")
 
         if content_type == "application/octet-stream":
             # Collect the full request body
             body_chunks = []
             body_complete = False
+            
+            if re.compile(r'^/api/user/\d{18}/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$').match(path):
+                state['decrypted_body'] = {} # Post user param causes somme problems when decrypting, we do not store user param
+                await self.app(scope, receive, send)
+                return
 
             async def receive_wrapper():
                 nonlocal body_complete

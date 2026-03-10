@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import Response
 
+from src.models.user_config import UserConfig
+
 from ...utils.crypt import encrypt
 from ...utils.updated_resources import generate_updated_resources
 from ...models.user import User
@@ -26,11 +28,24 @@ class UserRegistrationPayload(BaseModel):
     age: int
     billableLimitAgeType: Optional[object] = None
 
+'''
+"userConfig": {
+  "defaultMusicType": "sekai",
+  "naOptoutAdvertisingType": "on",
+  "naOptoutSupportAndAnalyticsType": "on",
+  "isDisplayLoginStatus": true,
+  "friendRequestScope": "all"
+ },'''
+class UserConfigPayload(BaseModel):
+    defaultMusicType: str
+    isDisplayLoginStatus: bool
+    friendRequestScope: str
+
 
 class PatchUserPayload(BaseModel):
     userGamedata: Optional[UserGamedataPayload] = None
     userRegistration: Optional[UserRegistrationPayload] = None
-
+    userConfig: Optional[UserConfigPayload] = None
 
 async def patch_user_route(request: Request, userId: int) -> Response:
     auth_user_id = getattr(request.state, "user_id", None)
@@ -58,13 +73,6 @@ async def patch_user_route(request: Request, userId: int) -> Response:
             media_type="application/octet-stream",
         )
 
-    if not parsed.userGamedata and not parsed.userRegistration:
-        return Response(
-            content=encrypt({"httpStatus": 422, "errorCode": "", "errorMessage": ""}),
-            status_code=422,
-            media_type="application/octet-stream",
-        )
-
     if parsed.userGamedata:
         await User.filter(userId=auth_user_id).update(name=parsed.userGamedata.name)
     elif parsed.userRegistration:
@@ -81,6 +89,16 @@ async def patch_user_route(request: Request, userId: int) -> Response:
             except ValueError:
                 # Silently skip if datetime creation fails (e.g., invalid date like Feb 30)
                 pass
+    elif parsed.userConfig:
+        config = await UserConfig.filter(userId=auth_user_id).first()
+        data = {
+            "defaultMusicType": parsed.userConfig.defaultMusicType,
+            "displayLoginStatus": parsed.userConfig.isDisplayLoginStatus,
+            "friendRequestScope": parsed.userConfig.friendRequestScope
+        }
+        data = {k: v for k, v in data.items() if v is not None}
+        config.update_from_dict(**data)
+        await config.save()
 
     updated = await generate_updated_resources(auth_user_id)
     return Response(

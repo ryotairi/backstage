@@ -2,6 +2,7 @@ import json
 import time
 from math import floor
 
+from src.models.user_config import UserConfig
 from src.models.user_music_result import UserMusicResult
 
 from ..config import config
@@ -266,6 +267,8 @@ async def generate_updated_resources(user_id: int) -> dict:
             ],
         }
         user_shops_payload.append(shop_entry)
+    
+    userConfig = await UserConfig.filter(userId=user_id).first()
 
     result = {
         **reg.get("updatedResources", {}),
@@ -273,9 +276,9 @@ async def generate_updated_resources(user_id: int) -> dict:
             {"userId": user.userId, "loginBonusId": 1, "loginBonusType": "normal", "progress": 1}
         ],
         "userConfig": {
-            "defaultMusicType": "sekai",
-            "isDisplayLoginStatus": True,
-            "friendRequestScope": "all",
+            "defaultMusicType": userConfig.defaultMusicType.value,
+            "isDisplayLoginStatus": userConfig.displayLoginStatus,
+            "friendRequestScope": userConfig.friendRequestScope.value,
             "naOptoutAdvertisingType": "",
             "naOptoutSupportAndAnalyticsType": "",  
         },

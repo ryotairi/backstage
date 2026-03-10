@@ -16,6 +16,7 @@ from .card import Card
 from .user_deck import UserDeck
 from .user_character import UserCharacter
 from .user_music import UserMusic
+from .user_config import UserConfig
 
 __all__ = [
     "User",
@@ -36,4 +37,5 @@ __all__ = [
     "UserDeck",
     "UserCharacter",
     "UserMusic",
+    "UserConfig"
 ]
