@@ -10,10 +10,12 @@ class VocalData(BaseModel):
 
 class GameData(BaseModel):
     initialPlayerName: str
-    initialFreeCards: list[int]
-    initialMusics: list[int]
+    initialFreeCards: list[int] = []
+    initialMusics: list[int] = []
     initialMusicsVocals: list[VocalData] = []
     initialStamps: list[int] = []
+    initialAvailableCostumes: list[int] = []
+    initialSaleCostumes: list[int] = []
 
 
 def load_data(path: str = "./data.jsonc") -> GameData:
@@ -25,11 +27,5 @@ def load_data(path: str = "./data.jsonc") -> GameData:
 try:
     game_data = load_data()
 except (FileNotFoundError, json.JSONDecodeError):
-    # Provide default values if data.json doesn't exist or is invalid
-    game_data = GameData(
-        initialPlayerName="SEKAI Player",
-        initialFreeCards=[81, 89, 93, 97, 101, 105],
-        initialMusics=[1, 2, 10, 26, 41, 50, 51, 54, 57, 60, 67, 76, 77, 82],
-        initialMusicsVocals=[],
-        initialStamps=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-    )
+    print("\033[31mInvalid or missing data.jsonc\033[0m")
+    exit(-1)

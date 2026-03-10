@@ -4,34 +4,35 @@ from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import Response
 
-from src import data
+from src.data import game_data
+from src.enum.user_costume_status import UserCostumeStatus
+from src.models.user_costume_3d_status import UserCostume3DStatus
 
-from ..utils.crypt import encrypt
-from ..utils.credentials import create_credential, create_signature
-from ..utils.random import generate_user_id
-from ..utils.updated_resources import generate_updated_resources
-from ..consts.game_data_cons import UNITS
-from ..services.logger import logger
-from ..models.user import User
-from ..models.user_game_data import UserGameData
-from ..models.user_boost_status import UserBoostStatus
-from ..models.card import Card
-from ..models.user_deck import UserDeck
-from ..models.user_music import UserMusic
-from ..models.user_shop import UserShop
-from ..models.user_shop_item import UserShopItem
-from ..models.user_episode_status import UserEpisodeStatus
-from ..models.user_material_exchange import UserMaterialExchange
-from ..models.user_character import UserCharacter
-from ..models.user_unit import UserUnit
-from ..models.user_area import UserArea
-from ..models.user_area_playlist_status import UserAreaPlaylistStatus
+from ...utils.crypt import encrypt
+from ...utils.credentials import create_credential, create_signature
+from ...utils.random import generate_user_id
+from ...utils.updated_resources import generate_updated_resources
+from ...consts.game_data_cons import UNITS
+from ...services.logger import logger
+from ...models.user import User
+from ...models.user_game_data import UserGameData
+from ...models.user_boost_status import UserBoostStatus
+from ...models.card import Card
+from ...models.user_deck import UserDeck
+from ...models.user_music import UserMusic
+from ...models.user_shop import UserShop
+from ...models.user_shop_item import UserShopItem
+from ...models.user_episode_status import UserEpisodeStatus
+from ...models.user_material_exchange import UserMaterialExchange
+from ...models.user_character import UserCharacter
+from ...models.user_unit import UserUnit
+from ...models.user_area import UserArea
+from ...models.user_area_playlist_status import UserAreaPlaylistStatus
 
 from datetime import datetime, timedelta
 
 _initial_areas = None
 _reg_data = None
-
 
 def _get_initial_areas():
     global _initial_areas
@@ -82,7 +83,7 @@ async def register_user_route(request: Request) -> Response:
         deviceModel=parsed.deviceModel,
         operatingSystem=parsed.operatingSystem,
         platform=parsed.platform,
-        name=data.initialPlayerName,
+        name=game_data.initialPlayerName,
         credential=create_credential(user_id),
         signature=create_signature(user_id),
         userId=user_id,
@@ -107,7 +108,7 @@ async def register_user_route(request: Request) -> Response:
         recoveryAt=datetime.now() + timedelta(days=1),
     )
 
-    for card_id in data.initialFreeCards:
+    for card_id in game_data.initialFreeCards:
         await Card.create(
             id=str(uuid.uuid4()),
             userId=user.userId,
@@ -154,9 +155,9 @@ async def register_user_route(request: Request) -> Response:
         members=[card.cardId for card in cards[:5]],
     )
 
-    for music_id in data.initialMusics:
+    for music_id in game_data.initialMusics:
         vocals_data = next(
-            (v.vocals for v in data.initialMusicsVocals if v.musicId == music_id),
+            (v.vocals for v in game_data.initialMusicsVocals if v.musicId == music_id),
             [],
         )
         await UserMusic.create(
@@ -258,6 +259,21 @@ async def register_user_route(request: Request) -> Response:
             userId=user.userId,
             userGameDataUserId=user.userId,
             unit=unit_name,
+        )
+    
+    for costumeId in game_data.initialAvailableCostumes:
+        await UserCostume3DStatus.create(
+            userId=user.userId,
+            costumeId=costumeId,
+            status=UserCostumeStatus.available,
+            obtainedAt=datetime.now()
+        )
+    
+    for costumeId in game_data.initialSaleCostumes:
+        await UserCostume3DStatus.create(
+            userId=user.userId,
+            costumeId=costumeId,
+            status=UserCostumeStatus.sale
         )
 
     user_registration = {

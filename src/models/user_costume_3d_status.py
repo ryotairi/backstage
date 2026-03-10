@@ -1,7 +1,7 @@
 from tortoise import Model, fields
 
 from src.enum.user_costume_status import UserCostumeStatus
-class UserCostumeStatus(Model):
+class UserCostume3DStatus(Model):
     id = fields.IntField(primary_key=True)
     
     userId = fields.BigIntField()

@@ -3,6 +3,7 @@ import time
 from math import floor
 
 from src.models.user_config import UserConfig
+from src.models.user_costume_3d_status import UserCostume3DStatus
 from src.models.user_music_result import UserMusicResult
 
 from ..config import config
@@ -268,6 +269,8 @@ async def generate_updated_resources(user_id: int) -> dict:
         }
         user_shops_payload.append(shop_entry)
     
+    costumes = await UserCostume3DStatus.filter(userId=user_id)
+    
     userConfig = await UserConfig.filter(userId=user_id).first()
 
     result = {
@@ -287,7 +290,14 @@ async def generate_updated_resources(user_id: int) -> dict:
         "userMaterials": [],
         "userGachas": [],
         "userGachaBonusPoints": [],
-        "userCostume3dStatuses": [],
+        "userCostume3dStatuses": [
+            {
+                "costume3dId": costume.costumeId,
+                "status": costume.status.value,
+                "obtainedAt": _ts(costume.obtainedAt) if costume.obtainedAt != None else None
+            }
+            for costume in costumes    
+        ],
         "userCostume3dShopItems": [],
         "userCharacterCostume3ds": [],
         "unreadUserTopics": [],
