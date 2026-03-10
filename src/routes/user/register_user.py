@@ -5,7 +5,9 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from src.data import game_data
+from src.enum.friend_request_scope_enum import FriendRequestScope
 from src.enum.user_costume_status import UserCostumeStatus
+from src.enum.music_type_enum import MusicTypeEnum
 from src.models.user_costume_3d_status import UserCostume3DStatus
 
 from ...utils.crypt import encrypt
@@ -28,6 +30,7 @@ from ...models.user_character import UserCharacter
 from ...models.user_unit import UserUnit
 from ...models.user_area import UserArea
 from ...models.user_area_playlist_status import UserAreaPlaylistStatus
+from ...models.user_config import UserConfig
 
 from datetime import datetime, timedelta
 
@@ -275,6 +278,13 @@ async def register_user_route(request: Request) -> Response:
             costumeId=costumeId,
             status=UserCostumeStatus.sale
         )
+    
+    await UserConfig.create(
+        userId=user.userId,
+        defaultMusicType=MusicTypeEnum.sekai,
+        displayLoginStatus=True,
+        friendRequestScope=FriendRequestScope.all
+    )
 
     user_registration = {
         "userId": user.userId,
@@ -295,7 +305,10 @@ async def register_user_route(request: Request) -> Response:
         content=encrypt({
             "userRegistration": user_registration,
             "credential": user.credential,
-            "updatedResources": updated,
+            "updatedResources": {
+                **updated,
+                "userConfig": None
+            },
         }),
         media_type="application/octet-stream",
     )

@@ -13,7 +13,7 @@ from .services.logger import logger
 
 from .routes.get_system import get_system_route
 from .routes.get_information import get_informations_route
-from .routes.register_user import register_user_route
+from .routes.user.register_user import register_user_route
 from .routes.user_auth import user_auth_route
 from .routes.set_tutorial_status import set_tutorial_status_route
 from .routes.suite_master_file import suite_master_file_route

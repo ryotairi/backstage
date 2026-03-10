@@ -5,6 +5,7 @@ from math import floor
 from src.models.user_config import UserConfig
 from src.models.user_costume_3d_status import UserCostume3DStatus
 from src.models.user_music_result import UserMusicResult
+from src.utils import master_suite
 
 from ..config import config
 from ..models.user import User
@@ -24,6 +25,8 @@ from ..models.user_episode_status import UserEpisodeStatus
 from ..models.user_material_exchange import UserMaterialExchange
 from ..consts.music_cons import DIFFICULTIES
 from .payloads import convert_deck_to_sekai_deck
+
+from src.data import game_data as gdata
 
 _reg_data = None
 
@@ -276,14 +279,14 @@ async def generate_updated_resources(user_id: int) -> dict:
     result = {
         **reg.get("updatedResources", {}),
         "userLoginBonuses": [
-            {"userId": user.userId, "loginBonusId": 1, "loginBonusType": "normal", "progress": 1}
+            # {"userId": user.userId, "loginBonusId": 1, "loginBonusType": "normal", "progress": 1}
         ],
         "userConfig": {
             "defaultMusicType": userConfig.defaultMusicType.value,
             "isDisplayLoginStatus": userConfig.displayLoginStatus,
             "friendRequestScope": userConfig.friendRequestScope.value,
-            "naOptoutAdvertisingType": "",
-            "naOptoutSupportAndAnalyticsType": "",  
+            "naOptoutAdvertisingType": "on",
+            "naOptoutSupportAndAnalyticsType": "on",  
         },
         "userPracticeTickets": [],
         "userSkillPracticeTickets": [],
@@ -294,9 +297,16 @@ async def generate_updated_resources(user_id: int) -> dict:
             {
                 "costume3dId": costume.costumeId,
                 "status": costume.status.value,
-                "obtainedAt": _ts(costume.obtainedAt) if costume.obtainedAt != None else None
+                **({"obtainedAt": _ts(costume.obtainedAt)} if costume.obtainedAt else {}),
             }
-            for costume in costumes    
+            for costume in costumes
+        ] + [
+            {
+                "costume3dId": c['id'],
+                "status": "forbidden"
+            }
+            for c in master_suite.mastersuite['costume3ds']
+            if c['id'] not in {costume.costumeId for costume in costumes}
         ],
         "userCostume3dShopItems": [],
         "userCharacterCostume3ds": [],
