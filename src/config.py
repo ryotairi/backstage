@@ -65,12 +65,7 @@ class Config(BaseModel):
     assetHash: str
     legal: LegalConfig
     informations: list[ApiInformation]
-    initialPlayerName: str
     deleteLiveDataAfterFinishing: bool
-    initialFreeCards: list[int]
-    initialMusics: list[int]
-    initialMusicsVocals: list[VocalData] = []
-    initialStamps: list[int] = []
     upstreamAssetUrl: str
 
 

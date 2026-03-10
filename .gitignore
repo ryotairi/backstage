@@ -7,10 +7,12 @@
 /lib
 /lib64
 /suitemasterfile
+
 /config.yml
-/activate
 
 **/__pycache__/
+**/__pycache__/*
+**/**/__pycache__/
 
 /src/**/__pycache__/
 

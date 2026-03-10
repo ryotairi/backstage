@@ -4,11 +4,12 @@ from pydantic import BaseModel
 from starlette.requests import Request
 from starlette.responses import Response
 
+from src import data
+
 from ..utils.crypt import encrypt
 from ..utils.credentials import create_credential, create_signature
 from ..utils.random import generate_user_id
 from ..utils.updated_resources import generate_updated_resources
-from ..config import config
 from ..consts.game_data_cons import UNITS
 from ..services.logger import logger
 from ..models.user import User
@@ -81,7 +82,7 @@ async def register_user_route(request: Request) -> Response:
         deviceModel=parsed.deviceModel,
         operatingSystem=parsed.operatingSystem,
         platform=parsed.platform,
-        name=config.initialPlayerName,
+        name=data.initialPlayerName,
         credential=create_credential(user_id),
         signature=create_signature(user_id),
         userId=user_id,
@@ -106,7 +107,7 @@ async def register_user_route(request: Request) -> Response:
         recoveryAt=datetime.now() + timedelta(days=1),
     )
 
-    for card_id in config.initialFreeCards:
+    for card_id in data.initialFreeCards:
         await Card.create(
             id=str(uuid.uuid4()),
             userId=user.userId,
@@ -153,9 +154,9 @@ async def register_user_route(request: Request) -> Response:
         members=[card.cardId for card in cards[:5]],
     )
 
-    for music_id in config.initialMusics:
+    for music_id in data.initialMusics:
         vocals_data = next(
-            (v.vocals for v in config.initialMusicsVocals if v.musicId == music_id),
+            (v.vocals for v in data.initialMusicsVocals if v.musicId == music_id),
             [],
         )
         await UserMusic.create(
