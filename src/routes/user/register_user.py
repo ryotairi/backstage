@@ -1,4 +1,5 @@
 import json
+from math import floor
 import uuid
 from pydantic import BaseModel
 from starlette.requests import Request
@@ -8,13 +9,16 @@ from src.data import game_data
 from src.enum.friend_request_scope_enum import FriendRequestScope
 from src.enum.user_costume_status import UserCostumeStatus
 from src.enum.music_type_enum import MusicTypeEnum
+from src.models.user_character_costume_3d import UserCharacterCostume3D
 from src.models.user_costume_3d_status import UserCostume3DStatus
+from src.models.user_material import UserMaterial
 
 from ...utils.crypt import encrypt
 from ...utils.credentials import create_credential, create_signature
 from ...utils.random import generate_user_id
 from ...utils.updated_resources import generate_updated_resources
 from ...consts.game_data_cons import UNITS
+from ...utils.master_suite import mastersuite
 from ...services.logger import logger
 from ...models.user import User
 from ...models.user_game_data import UserGameData
@@ -278,6 +282,42 @@ async def register_user_route(request: Request) -> Response:
             costumeId=costumeId,
             status=UserCostumeStatus.sale
         )
+    
+    for material in mastersuite['materials']:
+        await UserMaterial.create(
+            userId=user.userId,
+            materialId=material['id'],
+            quantity=0
+        )
+    
+    humanUnits = [
+        'light_sound',
+        'idol',
+        'street',
+        'theme_park',
+        'school_refusal'
+    ]
+    
+    for character_id in range(1, 21):
+        await UserCharacterCostume3D.create(
+            userId=user.userId,
+            characterId=character_id,
+            unit=humanUnits[floor(character_id / 5)],
+            hairCostume3dId=1,
+            headCostume3dId=1,
+            bodyCostume3dId=1
+        )
+    
+    for vocaloid_id in range(21, 27):
+        for unit in UNITS:
+            await UserCharacterCostume3D.create(
+                userId=user.userId,
+                characterId=vocaloid_id,
+                unit=unit,
+                hairCostume3dId=1,
+                headCostume3dId=1,
+                bodyCostume3dId=1
+            )
     
     await UserConfig.create(
         userId=user.userId,

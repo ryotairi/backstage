@@ -16,6 +16,7 @@ class GameData(BaseModel):
     initialStamps: list[int] = []
     initialAvailableCostumes: list[int] = []
     initialSaleCostumes: list[int] = []
+    userHomeBanners: list = []
 
 
 def load_data(path: str = "./data.jsonc") -> GameData:

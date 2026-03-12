@@ -49,7 +49,7 @@ class AuthenticationMiddleware:
             return
 
         user = await User.filter(credential=credential).first()
-        if not user:
+        if not user or user.ban:
             response = Response(
                 content=encrypt({
                     "httpStatus": 401,

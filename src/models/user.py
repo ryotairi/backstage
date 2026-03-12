@@ -17,6 +17,8 @@ class User(Model):
 
     tutorialStatus = fields.CharField(max_length=64, default="start")
     userLiveId = fields.CharField(max_length=128, null=True)
+    
+    ban = fields.CharField(max_length=512, null=True)
 
     name = fields.CharField(max_length=128)
 

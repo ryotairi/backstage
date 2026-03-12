@@ -10,7 +10,6 @@ from ..models.user import User
 class SetTutorialStatusPayload(BaseModel):
     tutorialStatus: str
 
-
 async def set_tutorial_status_route(request: Request, userId: int) -> Response:
     body = request.state.decrypted_body
     if not body:

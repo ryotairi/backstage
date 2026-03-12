@@ -4,16 +4,14 @@ from starlette.responses import Response
 
 from uuid import uuid4
 
-from ..utils.crypt import encrypt
-from ..utils.updated_resources import generate_updated_resources
-from ..config import config
-from ..models.user import User
-
+from ...utils.crypt import encrypt
+from ...utils.updated_resources import generate_updated_resources
+from ...config import config
+from ...models.user import User
 
 class UserAuthPayload(BaseModel):
     credential: str
     deviceId: str | None
-
 
 async def user_auth_route(request: Request, userId: int) -> Response:
     body = request.state.decrypted_body
@@ -68,6 +66,7 @@ async def user_auth_route(request: Request, userId: int) -> Response:
             "updatedResources": updated_resources,
             "suiteMasterSplitPath": config.suiteMasterSplitPath,
             "obtainedBondsRewardIds": [],
+            **({"userBanInfo": {"message": user.ban, "endAt": 1999999999999}} if user.ban else {})
         }),
         media_type="application/octet-stream",
     )
