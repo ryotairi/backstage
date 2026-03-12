@@ -18,6 +18,7 @@ from .user_character import UserCharacter
 from .user_music import UserMusic
 from .user_config import UserConfig
 from .user_costume_3d_status import UserCostume3DStatus
+from .user_material import UserMaterial
 
 __all__ = [
     "User",
@@ -39,5 +40,6 @@ __all__ = [
     "UserCharacter",
     "UserMusic",
     "UserConfig",
-    "UserCostume3DStatus"
+    "UserCostume3DStatus",
+    "UserMaterial"
 ]
